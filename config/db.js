@@ -13,12 +13,19 @@ import mongoose from "mongoose";
  * Uses the MONGO_URL from .env and connects to the "todoApp" database.
  * Logs success or failure to the console.
  */
+let isConnected;
+
 export const Connection = async () => {
+  if (isConnected) {
+    console.log("=> using existing database connection");
+    return;
+  }
   try {
-    await mongoose.connect(`${process.env.MONGO_URL}/todoApp`);
+    const db = await mongoose.connect(`${process.env.MONGO_URL}/todoApp`);
+    isConnected = db.connections[0].readyState;
     console.log("✅ MongoDB connected successfully");
   } catch (error) {
     console.error("❌ MongoDB connection failed:", error.message);
-    process.exit(1); // Exit the process if DB connection fails
+    throw error; // Throw instead of process.exit for serverless compatibility
   }
 };
